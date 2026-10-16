@@ -3,17 +3,17 @@
 <h1 align="center">Brotato: Web Port</h1>
 
 <p align="center">
-  <a href="https://github.com/smiledemic/brotatodlc-web">
+  <a href="https://github.com/smiledemic/brotato-web">
     <img src="https://img.shields.io/badge/GitHub-Repository-181717?style=for-the-badge&logo=github" alt="GitHub Repository">
   </a>
-  <a href="https://github.com/smiledemic/brotatodlc-web/stargazers">
-    <img src="https://img.shields.io/github/stars/smiledemic/brotatodlc-web?style=for-the-badge&logo=github&color=yellow" alt="GitHub Stars">
+  <a href="https://github.com/smiledemic/brotato-web/stargazers">
+    <img src="https://img.shields.io/github/stars/smiledemic/brotato-web?style=for-the-badge&logo=github&color=yellow" alt="GitHub Stars">
   </a>
-  <a href="https://github.com/smiledemic/brotatodlc-web/forks">
-    <img src="https://img.shields.io/github/forks/smiledemic/brotatodlc-web?style=for-the-badge&logo=github&color=blue" alt="GitHub Forks">
+  <a href="https://github.com/smiledemic/brotato-web/forks">
+    <img src="https://img.shields.io/github/forks/smiledemic/brotato-web?style=for-the-badge&logo=github&color=blue" alt="GitHub Forks">
   </a>
-  <a href="https://github.com/smiledemic/brotatodlc-web/issues">
-    <img src="https://img.shields.io/github/issues/smiledemic/brotatodlc-web?style=for-the-badge&logo=github&color=red" alt="GitHub Issues">
+  <a href="https://github.com/smiledemic/brotato-web/issues">
+    <img src="https://img.shields.io/github/issues/smiledemic/brotato-web?style=for-the-badge&logo=github&color=red" alt="GitHub Issues">
   </a>
 </p>
 
@@ -22,8 +22,8 @@
 </p>
 
 <p align="center">
-  <a href="https://smiledemic.github.io/brotatodlc-web/externalBuild/">External Build</a> •
-  <a href="https://smiledemic.github.io/brotatodlc-web/localBuild/">Local Build</a> •
+  <a href="https://smiledemic.github.io/brotato-web/externalBuild/">External Build</a> •
+  <a href="https://smiledemic.github.io/brotato-web/localBuild/">Local Build</a> •
   <a href="https://store.steampowered.com/app/1942280/Brotato/">Original Game</a>
 </p>
 
@@ -63,7 +63,7 @@ A repository-based build that uses the game's files hosted alongside the main pr
 - Uses the repository's game pack and supporting engine files.
 - Provides an alternative deployment arrangement to the External Build.
 
-<a href="https://smiledemic.github.io/brotatodlc-web/localBuild/"><img src="https://img.shields.io/badge/▶_Play-Local_Build-0969da?style=for-the-badge" alt="Play Local Build"></a> <a href="https://smiledemic.github.io/brotatodlc-web/externalBuild/"><img src="https://img.shields.io/badge/▶_Play-External_Build-2ea44f?style=for-the-badge" alt="Play External Build"></a>
+<a href="https://smiledemic.github.io/brotato-web/localBuild/"><img src="https://img.shields.io/badge/▶_Play-Local_Build-0969da?style=for-the-badge" alt="Play Local Build"></a> <a href="https://smiledemic.github.io/brotato-web/externalBuild/"><img src="https://img.shields.io/badge/▶_Play-External_Build-2ea44f?style=for-the-badge" alt="Play External Build"></a>
 
 Both builds were completed by smiledemic. Their loading and hosting arrangements differ, but both are intended to deliver the browser-playable game.
 
@@ -82,7 +82,7 @@ A huge thank-you to everyone who contributed to the project and helped bring it 
 ## Project Structure
 
 ```text
-brotatodlc-web/
+brotato-web/
 ├── externalBuild/
 │   └── index.html
 ├── localBuild/
