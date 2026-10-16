@@ -386,7 +386,7 @@ async function openFirstAvailable(candidates) {
 }
 
 // Stream the PCK with progress reporting.
-async function fetchPck(key, candidates) {
+async function fetchPckSingle(key, candidates) {
   setStatus('Loading index.pck');
 
   const { response, url } = await openFirstAvailable(candidates);
@@ -431,6 +431,73 @@ async function fetchPck(key, candidates) {
   }
 
   return blob;
+}
+
+// Fallback: the PCK split into plain files (index.pck.part1, part2, ...)
+// that each stay under GitHub's 100 MB limit, so Git LFS is not needed.
+const PCK_PART_NAME = 'index.pck.part';
+const PCK_MAX_PARTS = 20;
+
+async function fetchPckParts(key) {
+  const chunks = [];
+
+  for (let i = 1; i <= PCK_MAX_PARTS; i++) {
+    const partName = PCK_PART_NAME + i;
+    const url = resolveUrl(ENGINE_BASE + partName);
+
+    setStatus(`Loading ${partName}`);
+
+    const response = await fetch(url.href);
+
+    // Running out of parts is normal once at least one was found.
+    if (response.status === 404 && i > 1) break;
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}: Could not load ${url.pathname}`
+      );
+    }
+
+    const buffer = await response.arrayBuffer();
+
+    chunks.push(buffer);
+    loaded[key] += buffer.byteLength;
+    updateProgress();
+  }
+
+  const blob = new Blob(chunks, {
+    type: 'application/octet-stream'
+  });
+
+  if (blob.size < PCK_SIZE * 0.5) {
+    throw new Error(
+      `The merged PCK parts total only ${blob.size} bytes ` +
+      `(expected about ${PCK_SIZE}).`
+    );
+  }
+
+  return blob;
+}
+
+// Prefer a single index.pck; if it is missing or is an LFS pointer,
+// fall back to the split parts.
+async function fetchPck(key, candidates) {
+  try {
+    return await fetchPckSingle(key, candidates);
+  } catch (singleError) {
+    console.warn('[Brotato Local Build] Single PCK failed:', singleError);
+
+    loaded[key] = 0;
+
+    try {
+      return await fetchPckParts(key);
+    } catch (partsError) {
+      throw new Error(
+        `${singleError.message} | Split parts also failed: ` +
+        `${partsError.message}`
+      );
+    }
+  }
 }
 
 (async () => {
