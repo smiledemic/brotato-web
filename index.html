@@ -14,7 +14,6 @@
 
     :root {
       --rust: #c43d25;
-      --rust-dark: #742315;
       --cream: #eee0c2;
       --black: #171310;
 
@@ -52,7 +51,7 @@
       z-index: -3;
       inset: -35px;
       pointer-events: none;
-      background-image: url("https://web.ankomstudios.com/brotatodlc-web/background.png");
+      background-image: url("localBuild/background.png");
       background-position: center;
       background-repeat: no-repeat;
       background-size: cover;
@@ -67,7 +66,6 @@
       will-change: transform;
     }
 
-    /* Dark vignette */
     .background-overlay {
       position: fixed;
       z-index: -2;
@@ -87,7 +85,6 @@
         );
     }
 
-    /* Floating ash and rough debris */
     #ash-particles {
       position: fixed;
       z-index: -1;
@@ -127,87 +124,58 @@
     }
 
     .build-button {
-      position: relative;
       display: flex;
       flex: 1;
-      min-height: 92px;
+      min-height: 88px;
       max-width: 310px;
       align-items: center;
       justify-content: center;
-      padding: 18px 12px;
-      overflow: hidden;
+      padding: 16px 12px;
 
       border: 3px solid var(--black);
-      border-radius: 2px 7px 3px 5px;
-
-      background:
-        repeating-linear-gradient(
-          168deg,
-          transparent 0,
-          transparent 5px,
-          rgba(0, 0, 0, 0.11) 5px,
-          rgba(0, 0, 0, 0.11) 7px
-        ),
-        var(--rust);
+      border-radius: 4px;
+      background: var(--rust);
 
       color: #fff0d1;
-      font-size: clamp(1.35rem, 4vw, 2.2rem);
-      font-weight: 1000;
+      font-size: clamp(1.35rem, 4vw, 2.1rem);
       letter-spacing: 1px;
       line-height: 1;
       text-align: center;
       text-decoration: none;
       text-transform: uppercase;
-      text-shadow: 2px 2px 0 #34150e, -1px -1px 0 #34150e;
+      text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
 
-      box-shadow:
-        4px 5px 0 var(--black),
-        6px 8px 0 rgba(0, 0, 0, 0.38);
+      box-shadow: 0 4px 0 var(--black);
 
-      transform: rotate(-1deg);
       transition:
-        transform 130ms ease,
-        background-color 130ms ease,
-        box-shadow 130ms ease,
-        filter 130ms ease;
+        transform 120ms ease,
+        background-color 120ms ease,
+        box-shadow 120ms ease;
     }
 
     .build-button:nth-child(2) {
-      background-color: #29231d;
-      border-color: var(--black);
-      transform: rotate(1deg);
-    }
-
-    .build-button::before {
-      content: "";
-      position: absolute;
-      inset: 5px;
-      border: 1px dashed rgba(255, 235, 198, 0.45);
-      pointer-events: none;
+      background: #2d2721;
     }
 
     .build-button:hover {
-      background-color: #e34a2d;
-      transform: translateY(-4px) rotate(0deg);
-      box-shadow:
-        4px 9px 0 var(--black),
-        6px 12px 0 rgba(0, 0, 0, 0.35);
-      filter: contrast(1.12);
+      background: #d94a2e;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 var(--black);
     }
 
     .build-button:nth-child(2):hover {
-      background-color: #514033;
+      background: #453a30;
     }
 
     .build-button:active {
-      transform: translate(3px, 4px) rotate(0deg);
-      box-shadow: 1px 1px 0 var(--black);
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--black);
     }
 
     .build-button:focus-visible,
     footer a:focus-visible {
       outline: 3px solid white;
-      outline-offset: 6px;
+      outline-offset: 4px;
     }
 
     footer {
@@ -228,15 +196,8 @@
     }
 
     @keyframes enter {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     @media (max-width: 480px) {
@@ -260,8 +221,8 @@
       }
 
       .build-button {
-        min-height: 78px;
-        padding: 14px 8px;
+        min-height: 76px;
+        padding: 12px 8px;
         font-size: clamp(1.05rem, 5vw, 1.45rem);
         letter-spacing: 0;
       }
@@ -296,20 +257,13 @@
     <p class="subtitle">By Blobfish</p>
 
     <nav class="buttons" aria-label="Choose a game build">
-      <a class="build-button" href="localBuild/index.html">
-        Local Build
-      </a>
-
-      <a class="build-button" href="externalBuild/index.html">
-        External Build
-      </a>
+      <a class="build-button" href="localBuild/index.html">Local Build</a>
+      <a class="build-button" href="externalBuild/index.html">External Build</a>
     </nav>
 
     <footer>
-      Ported By Shayder & smiledemic<br>
-      <a href="https://github.com/smiledemic/brotatodlc-web">
-        SOURCE CODE
-      </a>
+      Ported By Shayder &amp; smiledemic<br>
+      <a href="https://github.com/smiledemic/brotatodlc-web">SOURCE CODE</a>
     </footer>
   </main>
 
@@ -317,9 +271,7 @@
     // Mouse-follow parallax
     (() => {
       const root = document.documentElement;
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      );
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
       const finePointer = window.matchMedia("(pointer: fine)");
 
       if (reducedMotion.matches || !finePointer.matches) return;
@@ -351,9 +303,7 @@
     (() => {
       const canvas = document.getElementById("ash-particles");
       const ctx = canvas.getContext("2d");
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      );
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
       if (!ctx || reducedMotion.matches) return;
 
@@ -365,13 +315,7 @@
       let animationId = 0;
       let isRunning = false;
 
-      const colors = [
-        "#c43d25",
-        "#8d3925",
-        "#e0b98a",
-        "#42372e",
-        "#d5c5a5"
-      ];
+      const colors = ["#c43d25", "#8d3925", "#e0b98a", "#42372e", "#d5c5a5"];
 
       function resize() {
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -435,12 +379,7 @@
           ctx.closePath();
           ctx.fill();
         } else {
-          ctx.fillRect(
-            -p.size * 0.5,
-            -p.size * 0.5,
-            p.size,
-            p.size * 0.7
-          );
+          ctx.fillRect(-p.size * 0.5, -p.size * 0.5, p.size, p.size * 0.7);
         }
 
         ctx.restore();
@@ -451,15 +390,11 @@
 
         animationId = requestAnimationFrame(animate);
 
-        const dt = Math.min(
-          (time - (lastTime || time)) / 1000,
-          0.04
-        );
+        const dt = Math.min((time - (lastTime || time)) / 1000, 0.04);
         lastTime = time;
 
         ctx.clearRect(0, 0, width, height);
 
-        // Sparse particles: slightly fewer on mobile.
         spawnBank += dt * (width < 600 ? 5 : 8);
 
         while (spawnBank >= 1) {
