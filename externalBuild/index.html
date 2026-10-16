@@ -1,0 +1,453 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>Brotato | External Build</title>
+<meta name="description" content="Play Brotato in your browser."/>
+<meta name="theme-color" content="#0b0b0b"/>
+
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/smiledemic/brotatodlc-web/main/index.icon.png"/>
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/smiledemic/brotatodlc-web/main/index.apple-touch-icon.png"/>
+
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Brotato"/>
+<meta property="og:title" content="Brotato"/>
+<meta property="og:description" content="Play Brotato in your browser."/>
+<meta property="og:url" content="https://smiledemic.github.io/brotatodlc-web/"/>
+<meta property="og:image" content="https://web.ankomstudios.com/brotatodlc-web/background.png"/>
+<meta property="og:image:alt" content="Brotato"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Brotato"/>
+<meta name="twitter:description" content="Play Brotato in your browser."/>
+<meta name="twitter:image" content="https://web.ankomstudios.com/brotatodlc-web/background.png"/>
+
+<style>
+:root {
+  --bg-blur: 8px;
+  --accent: #f7931e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { width: 100%; height: 100%; }
+
+body {
+  background: #000;
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+  color: #fff;
+  overflow: hidden;
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #000;
+}
+
+canvas:focus { outline: none; }
+
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  background: #000;
+  transition: opacity .6s ease;
+}
+
+.bg {
+  position: absolute;
+  inset: -40px;
+  background: #0b0b0b url('https://web.ankomstudios.com/brotatodlc-web/background.png') center/cover no-repeat;
+  filter: blur(var(--bg-blur));
+  transform: scale(1.03);
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.55), transparent 45%);
+}
+
+.load {
+  position: absolute;
+  left: 50%;
+  bottom: 8vh;
+  transform: translateX(-50%);
+  width: clamp(300px, 64vw, 860px);
+  max-width: 92vw;
+}
+
+.load-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-size: clamp(1rem, 1.15vw, 1.35rem);
+  letter-spacing: .03em;
+  text-shadow: 0 2px 6px #000;
+}
+
+#status-line {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+#size-line {
+  color: rgba(255,255,255,.75);
+  font-variant-numeric: tabular-nums;
+}
+
+.load-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 1.4vw, 24px);
+}
+
+.track {
+  flex: 1;
+  height: clamp(16px, 1.3vw, 24px);
+  background: rgba(0,0,0,.6);
+  border: 2px solid rgba(255,255,255,.28);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,.5), inset 0 2px 5px rgba(0,0,0,.6);
+}
+
+.fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to bottom, #ffb347, var(--accent) 55%, #e07b00);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+  transition: width .12s linear;
+}
+
+.spinner {
+  flex: none;
+  width: clamp(36px, 3vw, 58px);
+  height: clamp(36px, 3vw, 58px);
+  border: clamp(4px, .35vw, 6px) solid rgba(255,255,255,.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,.6));
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#pct {
+  flex: none;
+  min-width: 3.4em;
+  text-align: right;
+  font-size: clamp(1.1rem, 1.35vw, 1.6rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 6px #000;
+}
+
+.err-box {
+  display: none;
+  margin-top: 16px;
+  background: rgba(0,0,0,.75);
+  border: 1px solid rgba(255,90,90,.5);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.err-box.show { display: block; }
+
+.err-title {
+  font-size: .75rem;
+  font-weight: 700;
+  color: #ff6b6b;
+  margin-bottom: 4px;
+}
+
+.err-msg {
+  font-size: .72rem;
+  color: rgba(255,255,255,.85);
+  font-family: Consolas, 'Courier New', monospace;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.failed .spinner {
+  animation: none;
+  border-color: #ff6b6b;
+}
+
+.failed .fill { background: #ff6b6b; }
+</style>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="loader">
+  <div class="bg"></div>
+  <div class="shade"></div>
+
+  <div class="load" id="load">
+    <div class="load-top">
+      <span id="status-line">Loading</span>
+      <span id="size-line"></span>
+    </div>
+
+    <div class="load-row">
+      <div class="spinner" id="spinner"></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div id="pct">0%</div>
+    </div>
+
+    <div class="err-box" id="err-box">
+      <div class="err-title">Failed to load</div>
+      <div class="err-msg" id="err-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// All game assets are hosted in the R2 root.
+const CDN = 'https://web.ankomstudios.com/brotatodlc-web/';
+const asset = name => CDN + name;
+
+const MB = 1048576;
+const fmt = bytes => (bytes / MB).toFixed(1);
+
+// Expected sizes; progress is capped to avoid exceeding 100%.
+const PCK_SIZE = 205270016;
+const WASM_SIZE = 26156492;
+const TOTAL = PCK_SIZE + WASM_SIZE;
+
+const GODOT_CONFIG = {
+  args: [],
+  canvasResizePolicy: 2,
+  executable: 'index',
+  experimentalVK: false,
+  fileSizes: {
+    'index.pck': PCK_SIZE,
+    'index.wasm': WASM_SIZE
+  },
+  focusCanvas: true,
+  gdnativeLibs: []
+};
+
+const $ = id => document.getElementById(id);
+
+const tx = (id, value) => {
+  const element = $(id);
+  if (element) element.textContent = value;
+};
+
+function setStatus(message) {
+  tx('status-line', message);
+}
+
+const loaded = { pck: 0, wasm: 0 };
+
+function updateProgress() {
+  const got = Math.min(loaded.pck + loaded.wasm, TOTAL);
+  const pct = TOTAL ? got / TOTAL * 100 : 0;
+
+  $('fill').style.width = pct + '%';
+  tx('pct', Math.floor(pct) + '%');
+  tx('size-line', `${fmt(got)} / ${fmt(TOTAL)} MB`);
+}
+
+function showError(message) {
+  $('load').classList.add('failed');
+  $('err-box').classList.add('show');
+  tx('err-msg', message);
+  setStatus('Load failed');
+}
+
+// Stream a remote R2 file and update progress.
+async function fetchSingle(key, url) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${url}`);
+  }
+
+  if (!response.body) {
+    const buffer = await response.arrayBuffer();
+    loaded[key] += buffer.byteLength;
+    updateProgress();
+
+    return new Blob([buffer], {
+      type: 'application/octet-stream'
+    });
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    chunks.push(value);
+    loaded[key] += value.byteLength;
+    updateProgress();
+  }
+
+  return new Blob(chunks, {
+    type: 'application/octet-stream'
+  });
+}
+
+// Download WASM parts from R2 and concatenate in numeric order.
+async function fetchParts(key, filename, count) {
+  const parts = [];
+  let totalBytes = 0;
+
+  for (let i = 1; i <= count; i++) {
+    const partName = `${filename}.part${i}`;
+    const url = asset(partName);
+
+    setStatus(`Loading ${partName}`);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${url}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+
+    if (buffer.byteLength === 0) {
+      throw new Error(`Empty file: ${url}`);
+    }
+
+    parts.push(buffer);
+    totalBytes += buffer.byteLength;
+
+    loaded[key] += buffer.byteLength;
+    updateProgress();
+  }
+
+  const merged = new Uint8Array(totalBytes);
+  let offset = 0;
+
+  for (const part of parts) {
+    merged.set(new Uint8Array(part), offset);
+    offset += part.byteLength;
+  }
+
+  return merged.buffer;
+}
+
+(async () => {
+  let pckUrl;
+
+  try {
+    setStatus('Checking engine');
+
+    // Load the engine script from R2 before using Engine.
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = asset('index.js');
+      script.onload = resolve;
+      script.onerror = () => reject(
+        new Error(`Could not load engine: ${script.src}`)
+      );
+      document.head.appendChild(script);
+    });
+
+    if (typeof Engine === 'undefined') {
+      throw new Error('The remote index.js did not initialize Godot Engine.');
+    }
+
+    if (!Engine.isWebGLAvailable()) {
+      throw new Error(
+        'WebGL is unavailable. Enable hardware acceleration or try another browser.'
+      );
+    }
+
+    setStatus('Loading game');
+
+    const [pckBlob, wasmBuffer] = await Promise.all([
+      fetchSingle('pck', asset('index.pck')),
+      fetchParts('wasm', 'index.wasm', 2)
+    ]);
+
+    if (wasmBuffer.byteLength === 0) {
+      throw new Error('The combined WASM file is empty.');
+    }
+
+    setStatus('Starting game');
+    $('fill').style.width = '100%';
+    tx('pct', '100%');
+    tx('size-line', '');
+
+    pckUrl = URL.createObjectURL(pckBlob);
+
+    // Serve the concatenated WASM when Godot requests index.wasm.
+    const originalFetch = window.fetch.bind(window);
+
+    window.fetch = function(input, init) {
+      const requestUrl = input instanceof Request
+        ? input.url
+        : String(input);
+
+      let pathname;
+
+      try {
+        pathname = new URL(requestUrl, document.baseURI).pathname;
+      } catch (_) {
+        pathname = requestUrl;
+      }
+
+      if (pathname.endsWith('/index.wasm') || pathname === 'index.wasm') {
+        return Promise.resolve(new Response(wasmBuffer, {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/wasm',
+            'Content-Length': String(wasmBuffer.byteLength)
+          }
+        }));
+      }
+
+      return originalFetch(input, init);
+    };
+
+    const engine = new Engine(GODOT_CONFIG);
+
+    await engine.startGame({
+      executable: asset('index'),
+      mainPack: pckUrl
+    });
+
+    setStatus('');
+
+    const loader = $('loader');
+    loader.style.opacity = '0';
+    loader.style.pointerEvents = 'none';
+
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 650);
+
+  } catch (error) {
+    console.error('[Brotato External Build]', error);
+
+    if (pckUrl) URL.revokeObjectURL(pckUrl);
+
+    showError(error.message || String(error));
+  }
+})();
+</script>
+</body>
+</html>
