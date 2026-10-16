@@ -243,6 +243,36 @@ canvas:focus {
 </div>
 
 <!-- Engine files (index.js, index.wasm.part1/2, audio worklet) live in localBuild/ -->
+<script>
+// Keep the tab title fixed. The engine rewrites document.title on startup
+// (e.g. "... (DEBUG)"), so ignore those writes.
+(function () {
+  const LOCKED_TITLE = 'Brotato | Local Build';
+
+  try {
+    Object.defineProperty(document, 'title', {
+      configurable: true,
+      get() { return LOCKED_TITLE; },
+      set() { /* ignored */ }
+    });
+  } catch (_) { /* fall through to the observer below */ }
+
+  // Fallback: if the <title> text is changed anyway, put it back.
+  const titleEl = document.querySelector('title');
+
+  if (titleEl) {
+    new MutationObserver(() => {
+      if (titleEl.textContent !== LOCKED_TITLE) {
+        titleEl.textContent = LOCKED_TITLE;
+      }
+    }).observe(titleEl, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+})();
+</script>
 <script src="./index.js"></script>
 
 <script>
