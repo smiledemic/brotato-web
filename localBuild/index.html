@@ -14,14 +14,14 @@
 <meta property="og:site_name" content="Brotato"/>
 <meta property="og:title" content="Brotato"/>
 <meta property="og:description" content="Play Brotato in your browser."/>
-<meta property="og:url" content="https://smiledemic.github.io/brotatodlc-web/"/>
-<meta property="og:image" content="https://smiledemic.github.io/brotatodlc-web/localBuild/background.png"/>
+<meta property="og:url" content="https://smiledemic.github.io/brotato-web/"/>
+<meta property="og:image" content="https://smiledemic.github.io/brotato-web/localBuild/background.png"/>
 <meta property="og:image:alt" content="Brotato"/>
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="Brotato"/>
 <meta name="twitter:description" content="Play Brotato in your browser."/>
-<meta name="twitter:image" content="https://smiledemic.github.io/brotatodlc-web/localBuild/background.png"/>
+<meta name="twitter:image" content="https://smiledemic.github.io/brotato-web/localBuild/background.png"/>
 
 <style>
 :root {
@@ -251,8 +251,13 @@ canvas:focus {
 // localBuild/index.html and the engine files share this folder.
 const ENGINE_BASE = './';
 
-// The PCK sits next to this page in localBuild/ (stored with Git LFS).
-const PCK_URL = './index.pck';
+// Where to look for the PCK, in order. The first one that answers wins.
+// Expected location: localBuild/index.pck (next to this page).
+// Fallback: index.pck in the repository root (one folder up).
+const PCK_CANDIDATES = [
+  './index.pck',
+  '../index.pck'
+];
 
 const MB = 1048576;
 const fmt = bytes => (bytes / MB).toFixed(1);
@@ -306,6 +311,10 @@ function showError(message) {
   setStatus('Load failed');
 }
 
+// Resolve a path against this page's own URL, so it works no matter
+// which repository name or subfolder the site is served from.
+const resolveUrl = path => new URL(path, document.baseURI);
+
 // Fetch both local WASM parts and merge them in the correct order.
 async function fetchParts(key, filename, count) {
   const parts = [];
@@ -313,7 +322,7 @@ async function fetchParts(key, filename, count) {
 
   for (let i = 1; i <= count; i++) {
     const partName = `${filename}.part${i}`;
-    const url = new URL(partName, new URL(ENGINE_BASE, document.baseURI));
+    const url = resolveUrl(ENGINE_BASE + partName);
 
     setStatus(`Loading ${partName}`);
 
@@ -351,42 +360,77 @@ async function fetchParts(key, filename, count) {
   return merged.buffer;
 }
 
-// Stream the PCK with progress reporting.
-async function fetchSingle(key, url) {
-  const response = await fetch(url);
+// Try each candidate location until one responds successfully.
+async function openFirstAvailable(candidates) {
+  const tried = [];
 
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}: Could not load ${url}`
-    );
+  for (const candidate of candidates) {
+    const url = resolveUrl(candidate);
+
+    try {
+      const response = await fetch(url.href);
+
+      if (response.ok) {
+        return { response, url };
+      }
+
+      tried.push(`HTTP ${response.status}: ${url.pathname}`);
+    } catch (error) {
+      tried.push(`${error.message || error}: ${url.pathname}`);
+    }
   }
+
+  throw new Error(
+    'Could not find index.pck. Tried -> ' + tried.join(' | ')
+  );
+}
+
+// Stream the PCK with progress reporting.
+async function fetchPck(key, candidates) {
+  setStatus('Loading index.pck');
+
+  const { response, url } = await openFirstAvailable(candidates);
+
+  let blob;
 
   if (!response.body) {
     const buffer = await response.arrayBuffer();
     loaded[key] += buffer.byteLength;
     updateProgress();
 
-    return new Blob([buffer], {
+    blob = new Blob([buffer], {
+      type: 'application/octet-stream'
+    });
+  } else {
+    const reader = response.body.getReader();
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+
+      if (done) break;
+
+      chunks.push(value);
+      loaded[key] += value.byteLength;
+      updateProgress();
+    }
+
+    blob = new Blob(chunks, {
       type: 'application/octet-stream'
     });
   }
 
-  const reader = response.body.getReader();
-  const chunks = [];
-
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) break;
-
-    chunks.push(value);
-    loaded[key] += value.byteLength;
-    updateProgress();
+  // A tiny file means a Git LFS pointer (or an error page) was served
+  // instead of the real game data.
+  if (blob.size < PCK_SIZE * 0.5) {
+    throw new Error(
+      `${url.pathname} is only ${blob.size} bytes (expected about ` +
+      `${PCK_SIZE}). The server returned a Git LFS pointer or an ` +
+      'error page instead of the real game file.'
+    );
   }
 
-  return new Blob(chunks, {
-    type: 'application/octet-stream'
-  });
+  return blob;
 }
 
 (async () => {
@@ -413,7 +457,7 @@ async function fetchSingle(key, url) {
     setStatus('Loading');
 
     const [pckBlob, wasmBuffer] = await Promise.all([
-      fetchSingle('pck', PCK_URL),
+      fetchPck('pck', PCK_CANDIDATES),
       fetchParts('wasm', 'index.wasm', 2)
     ]);
 
