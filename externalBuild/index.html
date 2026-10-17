@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,14 +7,14 @@
 <meta name="description" content="Play Brotato in your browser."/>
 <meta name="theme-color" content="#0b0b0b"/>
 
-<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/smiledemic/brotatodlc-web/main/index.icon.png"/>
-<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/smiledemic/brotatodlc-web/main/index.apple-touch-icon.png"/>
+<link rel="icon" type="image/png" href="https://smiledemic.github.io/brotato-web/index.icon.png"/>
+<link rel="apple-touch-icon" href="https://smiledemic.github.io/brotato-web/index.apple-touch-icon.png"/>
 
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Brotato"/>
 <meta property="og:title" content="Brotato"/>
 <meta property="og:description" content="Play Brotato in your browser."/>
-<meta property="og:url" content="https://smiledemic.github.io/brotatodlc-web/"/>
+<meta property="og:url" content="https://smiledemic.github.io/brotato-web/"/>
 <meta property="og:image" content="https://web.ankomstudios.com/brotatodlc-web/background.png"/>
 <meta property="og:image:alt" content="Brotato"/>
 
@@ -23,6 +22,58 @@
 <meta name="twitter:title" content="Brotato"/>
 <meta name="twitter:description" content="Play Brotato in your browser."/>
 <meta name="twitter:image" content="https://web.ankomstudios.com/brotatodlc-web/background.png"/>
+
+<script>
+// Keep the tab title and favicon fixed from the first moment the page runs.
+// The engine rewrites document.title on startup (e.g. "... (DEBUG)"), so
+// writes to it are ignored.
+(function () {
+  const LOCKED_TITLE = 'Brotato | External Build';
+  const ICON_URL = 'https://smiledemic.github.io/brotato-web/index.icon.png';
+
+  try {
+    Object.defineProperty(document, 'title', {
+      configurable: true,
+      get() { return LOCKED_TITLE; },
+      set() { /* ignored */ }
+    });
+  } catch (_) { /* fall through to the observer below */ }
+
+  // Fallback: if the <title> text is changed anyway, put it back.
+  const titleEl = document.querySelector('title');
+
+  if (titleEl) {
+    new MutationObserver(() => {
+      if (titleEl.textContent !== LOCKED_TITLE) {
+        titleEl.textContent = LOCKED_TITLE;
+      }
+    }).observe(titleEl, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+
+  // Make sure the favicon is set at init, and restore it if it is removed.
+  function ensureIcon() {
+    let link = document.querySelector('link[rel~="icon"]');
+
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = ICON_URL;
+      document.head.appendChild(link);
+    }
+  }
+
+  ensureIcon();
+
+  new MutationObserver(ensureIcon).observe(document.head, {
+    childList: true
+  });
+})();
+</script>
 
 <style>
 :root {
